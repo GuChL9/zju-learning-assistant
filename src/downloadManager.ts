@@ -42,6 +42,7 @@ export class Task {
         this.remainingTime = 0
         this.status = 'downloading'
         this.errorMessage = ''
+        this.msg = ''
     }
 
     public updateProgress(progress: Progress): void {

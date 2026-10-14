@@ -182,7 +182,7 @@ pub fn preview_file_name(original: &str) -> String {
     } else {
         format!(
             "{}.preview.pdf",
-            path.file_stem().unwrap_or_default().to_string_lossy()
+            path.file_name().unwrap_or_default().to_string_lossy()
         )
     }
 }
@@ -292,6 +292,13 @@ mod tests {
     #[test]
     fn exports_office_documents_with_a_pdf_extension() {
         assert_eq!(preview_file_name("lecture.PDF"), "lecture.PDF");
-        assert_eq!(preview_file_name("lecture.pptx"), "lecture.preview.pdf");
+        assert_eq!(
+            preview_file_name("lecture.pptx"),
+            "lecture.pptx.preview.pdf"
+        );
+        assert_ne!(
+            preview_file_name("lecture.pptx"),
+            preview_file_name("lecture.docx")
+        );
     }
 }
