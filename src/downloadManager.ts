@@ -121,11 +121,6 @@ export class LearningTask extends Task {
         return invoke('start_download_upload', { id: this.id, upload: this.upload, syncUpload: this.syncUpload })
     }
 
-    public updateProgress(progress: Progress): void {
-        super.updateProgress(progress)
-        this.upload.file_name = progress.file_name
-    }
-
     async cancel(): Promise<any> {
         super.cancel()
         // cancel uploading
@@ -133,12 +128,13 @@ export class LearningTask extends Task {
     }
 
     async openFile(folder: boolean): Promise<string> {
-        return invoke('open_file_upload', { upload: this.upload, folder })
+        // Keep source metadata unchanged for retries and preview sync receipts.
+        return invoke('open_file_upload', { upload: { ...this.upload, file_name: this.name }, folder })
     }
 
     public equals(task: Task): boolean {
         if (task instanceof LearningTask) {
-            return this.id === task.id && this.name === task.name && this.path === task.path &&
+            return this.id === task.id && this.upload.file_name === task.upload.file_name && this.path === task.path &&
                 this.upload.size === task.upload.size
         } else {
             return false
