@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Ok, Result};
+use anyhow::{anyhow, Result};
 use log::{debug, info};
 use percent_encoding::percent_decode_str;
 use regex::Regex;
