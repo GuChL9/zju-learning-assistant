@@ -23,6 +23,12 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+          ref: ac776a004ef7964630f6fa7c7f0dfa7427ee63dc
+      - name: Verify source commit
+        run: |
+          if ((git rev-parse HEAD) -ne 'ac776a004ef7964630f6fa7c7f0dfa7427ee63dc') {
+            throw 'Unexpected source commit'
+          }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24
@@ -45,18 +51,21 @@ jobs:
       - name: Build Windows application
         working-directory: src-tauri
         run: cargo build --release --features custom-protocol --bin app --locked
-      - name: Collect application and local integration test runner
+      - name: Collect application
         run: |
           New-Item -ItemType Directory -Path artifacts -Force | Out-Null
-          Copy-Item -LiteralPath src-tauri/target/release/app.exe -Destination artifacts/ZLA-WPS-fix.exe
+          Copy-Item -LiteralPath src-tauri/target/release/app.exe -Destination artifacts/ZLA-WPS-fix-ac776a0.exe
           Copy-Item -LiteralPath LICENSE -Destination artifacts/LICENSE.txt
-          $testRunner = Get-ChildItem -Path src-tauri/target/release/deps/app_lib-*.exe | Select-Object -First 1
-          if (!$testRunner) { throw 'Download test runner was not generated' }
-          Copy-Item -LiteralPath $testRunner.FullName -Destination artifacts/zla-download-tests.exe
+          @{
+            source_commit = (git rev-parse HEAD)
+            workflow_commit = '${{ github.sha }}'
+            repository = '${{ github.repository }}'
+            run_url = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          } | ConvertTo-Json | Set-Content artifacts/BUILD-INFO.json -Encoding utf8
           Get-FileHash artifacts/*.exe -Algorithm SHA256 | ForEach-Object { "$($_.Hash)  $(Split-Path $_.Path -Leaf)" } | Set-Content artifacts/SHA256SUMS.txt
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: ZLA-WPS-fix-windows-x64
+          name: ZLA-WPS-fix-windows-x64-ac776a0
           path: artifacts/
           if-no-files-found: error
           retention-days: 30
